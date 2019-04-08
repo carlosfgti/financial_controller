@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt-nodejs')
-
-// const User = require('../models/user')
+const jwt = require('jwt-simple')
+const { mySecret } = require('../.env')
 
 module.exports = app => {
     const User = app.models.user
@@ -30,5 +30,37 @@ module.exports = app => {
             })
     }
 
-    return { signup }
+    const login = (req, res, next) => {
+        const data = {... req.query}
+
+        User.findOne({email: data.email})
+            .then(user => {
+                if (!user) {
+                    return res.status(401).json({
+                        error: 'A user with this email could not be found.'
+                    })
+                }
+
+                const isMatch = bcrypt.compareSync(data.password, user.password)
+                if (!isMatch) {
+                    return res.status(401).json({
+                        error: 'Password incorret'
+                    })
+                }
+
+                const payload = user
+
+                res.json({
+                    payload,
+                    token: jwt.encode(payload, mySecret)
+                })
+            })
+            .catch(error => {
+                return res.status(error.statusCode || 500).json({
+                    error: 'Error!!!'
+                })
+            })
+    }
+
+    return { signup, login }
 }
