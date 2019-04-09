@@ -3,7 +3,7 @@ const consign = require('consign')
 const mongoose = require('mongoose')
 
 consign()
-    .include('./middlewares/middlewares.js')
+    .include('./middlewares/middleware.js')
     .then('./models')
     .include('./middlewares/passport.js')
     .then('./controllers')
